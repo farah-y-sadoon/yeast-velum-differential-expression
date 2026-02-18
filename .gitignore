@@ -1,0 +1,8 @@
+# Ignore all large data files
+*.gz
+*.fasta
+*.fastq
+*.sra
+
+# Ignore metadata
+*.DS_Store
