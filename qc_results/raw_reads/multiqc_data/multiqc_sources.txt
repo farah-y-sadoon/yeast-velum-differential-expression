@@ -1,0 +1,10 @@
+Module	Section	Sample Name	Source
+FastQC	all_sections	SRR10551657	/Users/farahsadoon/Desktop/m.binf/binf_6110/yeast-velum-differential-expression/qc_results/raw_reads/SRR10551657_fastqc.zip
+FastQC	all_sections	SRR10551658	/Users/farahsadoon/Desktop/m.binf/binf_6110/yeast-velum-differential-expression/qc_results/raw_reads/SRR10551658_fastqc.zip
+FastQC	all_sections	SRR10551659	/Users/farahsadoon/Desktop/m.binf/binf_6110/yeast-velum-differential-expression/qc_results/raw_reads/SRR10551659_fastqc.zip
+FastQC	all_sections	SRR10551660	/Users/farahsadoon/Desktop/m.binf/binf_6110/yeast-velum-differential-expression/qc_results/raw_reads/SRR10551660_fastqc.zip
+FastQC	all_sections	SRR10551661	/Users/farahsadoon/Desktop/m.binf/binf_6110/yeast-velum-differential-expression/qc_results/raw_reads/SRR10551661_fastqc.zip
+FastQC	all_sections	SRR10551662	/Users/farahsadoon/Desktop/m.binf/binf_6110/yeast-velum-differential-expression/qc_results/raw_reads/SRR10551662_fastqc.zip
+FastQC	all_sections	SRR10551663	/Users/farahsadoon/Desktop/m.binf/binf_6110/yeast-velum-differential-expression/qc_results/raw_reads/SRR10551663_fastqc.zip
+FastQC	all_sections	SRR10551664	/Users/farahsadoon/Desktop/m.binf/binf_6110/yeast-velum-differential-expression/qc_results/raw_reads/SRR10551664_fastqc.zip
+FastQC	all_sections	SRR10551665	/Users/farahsadoon/Desktop/m.binf/binf_6110/yeast-velum-differential-expression/qc_results/raw_reads/SRR10551665_fastqc.zip
