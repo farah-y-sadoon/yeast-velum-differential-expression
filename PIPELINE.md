@@ -28,6 +28,9 @@ wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/003/046/745/GCA_003046745.1_AS
 # Download reference transcriptome
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/003/046/745/GCA_003046745.1_ASM304674v1/GCA_003046745.1_ASM304674v1_rna_from_genomic.fna.gz -O ./data/references/scerev_ref_transcripts.fna.gz
 
+# Download reference genome annotation in GTF format
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/003/046/745/GCA_003046745.1_ASM304674v1/GCA_003046745.1_ASM304674v1_genomic.gtf.gz -O ./data/references/scerev_ref_annotation.gtf.gz
+
 # Install entrez-direct to get SRA list
 sh -c "$(curl -fsSL https://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh)"
 export PATH=${HOME}/edirect:${PATH}
@@ -94,13 +97,7 @@ cd data/salmon_index
 salmon index -t scerev_gentrome.fa.gz -d decoys.txt -p 12 -i index
 
 # Quantify gene expression for each sample with Salmon
-brew install parallel
-
-
-
-
-
-
+./scripts/salmon_quant.sh
 ```
 ## 3. Statistical Analysis
 ## 4. Visualize Differentially Expressed Genes

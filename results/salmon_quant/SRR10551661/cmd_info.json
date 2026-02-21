@@ -1,0 +1,11 @@
+{
+    "salmon_version": "1.10.3",
+    "index": "data/salmon_index/index",
+    "libType": "A",
+    "unmatedReads": "data/filtered/SRR10551661.clean.fastq.gz",
+    "validateMappings": [],
+    "softclip": [],
+    "threads": "12",
+    "output": "results/salmon_quant/SRR10551661",
+    "auxDir": "aux_info"
+}
