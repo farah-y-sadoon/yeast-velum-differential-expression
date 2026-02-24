@@ -23,13 +23,13 @@ mature,IL30,SRR10551658
 mature,IL31,SRR10551657
 
 # Download reference genome
-wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/003/046/745/GCA_003046745.1_ASM304674v1/GCA_003046745.1_ASM304674v1_genomic.fna.gz -O ./data/references/scerev_ref_genome.fna.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/146/045/GCF_000146045.2_R64/GCF_000146045.2_R64_genomic.fna.gz -O ./data/references/scerev_ref_genome.fna.gz
 
 # Download reference transcriptome
-wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/003/046/745/GCA_003046745.1_ASM304674v1/GCA_003046745.1_ASM304674v1_rna_from_genomic.fna.gz -O ./data/references/scerev_ref_transcripts.fna.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/146/045/GCF_000146045.2_R64/GCF_000146045.2_R64_rna.fna.gz -O ./data/references/scerev_ref_transcripts.fna.gz
 
 # Download reference genome annotation in GTF format
-wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/003/046/745/GCA_003046745.1_ASM304674v1/GCA_003046745.1_ASM304674v1_genomic.gtf.gz -O ./data/references/scerev_ref_annotation.gtf.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/146/045/GCF_000146045.2_R64/GCF_000146045.2_R64_genomic.gtf.gz -O ./data/references/scerev_ref_annotation.gtf.gz
 
 # Install entrez-direct to get SRA list
 sh -c "$(curl -fsSL https://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh)"
@@ -83,7 +83,7 @@ conda create -n salmon
 conda activate salmon
 conda install salmon
 
-# Build salmon index 
+# Build salmon index - based on this tutorial: https://combine-lab.github.io/alevin-tutorial/2019/selective-alignment/
 ## Prepare metadata
 ### Extract genome targets (decoys)
 grep "^>" <(gunzip -c ./data/references/scerev_ref_genome.fna.gz) | cut -d " " -f 1 > ./data/salmon_index/decoys.txt
@@ -92,13 +92,19 @@ sed -i.bak -e 's/>//g' ./data/salmon_index/decoys.txt
 ### Concatenate transcriptome and genome reference file
 cat ./data/references/scerev_ref_transcripts.fna.gz ./data/references/scerev_ref_genome.fna.gz > ./data/salmon_index/scerev_gentrome.fa.gz
 
-## Index 
+## Index and create decoys
 cd data/salmon_index
 salmon index -t scerev_gentrome.fa.gz -d decoys.txt -p 12 -i index
 
 # Quantify gene expression for each sample with Salmon
 ./scripts/salmon_quant.sh
 ```
-## 3. Statistical Analysis
-## 4. Visualize Differentially Expressed Genes
-## 5. Functional Enrichment Analysis
+## 3. Statistical Analysis and Visualization of Differentially Expressed Genes
+```bash
+# Execute R script for statistical analysis and visualization
+Rscript scripts/differential_gene_expression.R
+``` 
+## 4. Functional Enrichment Analysis
+```bash
+# Execute R script for functional enrichment analysis
+```
