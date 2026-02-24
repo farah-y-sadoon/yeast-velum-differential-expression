@@ -1,4 +1,5 @@
 #!/bin/bash
+# Based on tutorial from https://combine-lab.github.io/salmon/getting_started/
 
 INDEX="data/salmon_index/index"
 OUTDIR="results/salmon_quant"
