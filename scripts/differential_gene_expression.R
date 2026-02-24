@@ -1,6 +1,5 @@
-'''
-Statistical analysis and visualization of Saccharomyces cerevisiae RNA-Seq data 
-'''
+"Statistical analysis and visualization of Saccharomyces cerevisiae RNA-Seq data"
+
 # Install and load libraries ----
 # if (!require("BiocManager", quietly = TRUE))
   # install.packages("BiocManager")
@@ -20,6 +19,7 @@ library(apeglm)
 library(pheatmap)
 
 # Import data ----
+setwd("./scripts/")
 
 ## Create objects for Salmon output ----
 # Import sample metadata with stages of biofilm
@@ -82,6 +82,7 @@ res_thin_to_mature <- lfcShrink(dds_thin, coef = "stage_mature_vs_thin", type = 
 # View coefficients
 resultsNames(dds)
 resultsNames(dds_thin)
+samples$stage
 
 # Plotting Differential Gene Expression Analysis Results ----
 ## Volcano Plot ----
@@ -191,3 +192,6 @@ pca_plot_stages <- ggplot(pca_data, aes(PC1, PC2, shape = stage, color = stage))
   coord_fixed()
 
 ggsave("../figs/05_pca_plot_stages.png", plot = pca_plot_stages, width = 10, height = 6, dpi = 600)
+
+# Save early to mature results after shrinkage and na.omit for functional enrichment analysis
+saveRDS(res_clean_early_to_mature, "../results/deseq2_results/res_clean_early_to_mature.rds")
