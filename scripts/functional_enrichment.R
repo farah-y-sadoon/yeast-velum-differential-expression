@@ -24,7 +24,7 @@ if (current_dir != "scripts") {
 }
 
 # Load significant gene lists with up- and down-regulated groups
-sig_list <- readRDS("../results/deseq2_results/sig_gene_lists.rds")
+sig_list <- readRDS("../results/deseq2/sig_gene_lists.rds")
 
 # Convert all 6 lists from ORF to ENTREZID
 sig_entrez_list <- lapply(sig_list, function(x) {
@@ -45,6 +45,8 @@ dotplot(compare_go_results, showCategory = 5) +
 ### Simplified Results ----
 # Create a simplified results object to remove redundant GO terms
 simplified_results <- clusterProfiler::simplify(compare_go_results, cutoff = 0.7)
+
+# Clean up labels for plotting
 levels(simplified_results@compareClusterResult$Cluster) <- 
   gsub("_", " ", levels(simplified_results@compareClusterResult$Cluster))
 
@@ -58,8 +60,27 @@ go_ora_plot <- dotplot(simplified_results, showCategory = 5) +
         axis.text.y = element_text(size = 8)) + 
   labs(title = "A", x = "")
 
-ggsave("../figs/06_go_ora_plot.png", plot = go_ora_plot, width = 12, height = 10, dpi = 600)
+# KEGG Enrichment: Over-representation Analysis (ORA) ----
+compare_kegg_results <- compareCluster(geneCluster = sig_list, 
+                                       fun = "enrichKEGG", 
+                                       organism = "sce", # Saccharomyces cerevisiae code in database = "sce"
+                                       keyType = "kegg",
+                                       pvalueCutoff = 0.05)
 
-# Save results 
+# Clean up labels for plotting
+levels(compare_kegg_results@compareClusterResult$Cluster) <- 
+  gsub("_", " ", levels(compare_kegg_results@compareClusterResult$Cluster))
+
+## Visualize Results ----
+kegg_ora_plot <- dotplot(compare_kegg_results, showCategory = 5) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 8)) + 
+  labs(title = "B", x = "")
+
+# Save Results and Figures ----
+combined_ora_plot <- go_ora_plot + kegg_ora_plot
+ggsave("../figs/06_ora_go_kegg_plot.png", plot = combined_ora_plot, width = 20, height = 12, dpi = 600)
 go_final_results_table <- as.data.frame(simplified_results)
-write.csv(go_final_results_table, "../results/deseq2_results/go_enrichment_results.csv", row.names = FALSE)
+write.csv(go_final_results_table, "../results/enrichment/go_enrichment_results.csv", row.names = FALSE)
+kegg_final_results_table <- as.data.frame(compare_kegg_results)
+write.csv(kegg_final_results_table, "../results/enrichment/kegg_enrichment_results.csv", row.names = FALSE)
