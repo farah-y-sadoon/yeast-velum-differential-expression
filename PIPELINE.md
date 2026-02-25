@@ -107,4 +107,5 @@ Rscript scripts/differential_gene_expression.R
 ## 4. Functional Enrichment Analysis
 ```bash
 # Execute R script for functional enrichment analysis
+Rscript scripts/functional_enrichment.R
 ```
