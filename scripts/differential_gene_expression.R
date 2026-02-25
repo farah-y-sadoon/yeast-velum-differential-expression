@@ -61,12 +61,13 @@ clean_names <- gsub("\\.[0-9]+$", "", all_salmon_names)
 # Map transcript names to gene symbols
 gene_map <- bitr(clean_names, 
                  fromType = "REFSEQ", 
-                 toType = c("ENTREZID", "COMMON", "ORF"),
+                 toType = c("ENTREZID", "GENENAME", "ORF"),
                  OrgDb = org.Sc.sgd.db)
 
 # Build the final tx2gene table
 tx2gene <- data.frame(TXNAME = all_salmon_names, 
                       GENEID = gene_map$ORF[match(clean_names, gene_map$REFSEQ)],
+                      GENENAME = gene_map$GENENAME[match(clean_names, gene_map$REFSEQ)],
                       stringsAsFactors = FALSE)
 
 ## Import salmon data counts in
@@ -155,7 +156,13 @@ vsd <- vst(dds)
 # Store counts in a matrix for the heatmap
 mat_vsd <- assay(vsd)[gene_names, ]
 
-# Create an annotation data frame and assign the sample names as rownamess
+# Explicitly create heatmap labels to have gene names instead of ORFs if gene names exist
+heatmap_labels <- tx2gene$GENENAME[match(rownames(mat_vsd), tx2gene$GENEID)]
+rownames(mat_vsd) <- ifelse(is.na(heatmap_labels) | heatmap_labels == "",
+                            paste0(rownames(mat_vsd), " (UNNAMED)"), 
+                            heatmap_labels)
+
+# Create an annotation data frame and assign the sample names as rownames
 annotation_df <- data.frame(Stage = samples$stage)
 rownames(annotation_df) <- colnames(mat_vsd)
 colnames(mat_vsd) <- samples$sample_id
@@ -226,4 +233,4 @@ sig_list <- c(
 )
 
 # Save results for functional enrichment analysis
-saveRDS(sig_list, "../results/deseq2_results/sig_gene_lists.rds")
+saveRDS(sig_list, "../results/deseq2/sig_gene_lists.rds")
