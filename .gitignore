@@ -7,3 +7,5 @@
 # Ignore metadata
 *.DS_Store
 data/.Rapp.history
+scripts/.Rhistory
+scripts/.RData
