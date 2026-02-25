@@ -1,4 +1,5 @@
 "Statistical analysis and visualization of Saccharomyces cerevisiae RNA-Seq data"
+# This analysis is based on the BINF 6110 - Genomic Methods Tutorials 7 & 8
 
 # Install and load libraries ----
 # if (!require("BiocManager", quietly = TRUE))
@@ -9,6 +10,8 @@
 # BiocManager::install("rtracklayer")
 # BiocManager::install("DESeq2")
 # BiocManager::install("apeglm")
+# BiocManager::install("org.Sc.sgd.db")
+# BiocManager::install("clusterProfiler")
 # install.packages("pheatmap")
 
 library(tidyverse)
@@ -17,9 +20,18 @@ library(rtracklayer)
 library(DESeq2)
 library(apeglm)
 library(pheatmap)
+library(org.Sc.sgd.db)
+library(clusterProfiler)
 
 # Import data ----
-setwd("./scripts/")
+# Set working directory
+# Get the name of the current folder
+current_dir <- basename(getwd())
+
+# Only change directory if we aren't already in the 'scripts' folder
+if (current_dir != "scripts") {
+  setwd("./scripts/")
+}
 
 ## Create objects for Salmon output ----
 # Import sample metadata with stages of biofilm
@@ -42,17 +54,20 @@ names(files) <- samples$sra_accession
 all(file.exists(files))
 
 ## Create table for genes and their counts from Salmon ----
-# Get list of names that Salmon used for quantifying
+# Get list of names that Salmon used for quantifying and remove suffixes
 all_salmon_names <- read.table(files[1], header=TRUE)$Name
+clean_names <- gsub("\\.[0-9]+$", "", all_salmon_names)
 
-# Create a mapping table by taking the gene ID from the names used by Salmon - looks for "C4S56_" followed by digits (gene ID)
-gene_ids <- regmatches(all_salmon_names, regexpr("C4S56_[0-9]+", all_salmon_names))
+# Map transcript names to gene symbols
+gene_map <- bitr(clean_names, 
+                 fromType = "REFSEQ", 
+                 toType = c("ENTREZID", "COMMON", "ORF"),
+                 OrgDb = org.Sc.sgd.db)
 
 # Build the final tx2gene table
-tx2gene <- data.frame(TXNAME = all_salmon_names,
-                      GENEID = gene_ids,
+tx2gene <- data.frame(TXNAME = all_salmon_names, 
+                      GENEID = gene_map$ORF[match(clean_names, gene_map$REFSEQ)],
                       stringsAsFactors = FALSE)
-
 
 ## Import salmon data counts in
 txi <- tximport(files, type = "salmon", tx2gene = tx2gene)
@@ -85,6 +100,7 @@ resultsNames(dds_thin)
 samples$stage
 
 # Plotting Differential Gene Expression Analysis Results ----
+
 ## Volcano Plot ----
 # Mark genes as upregulated, downregulated, or not significant and exclude genes with under 2-fold change (log2FoldChange < 1)
 # Create a function that labels results output from DESeq as significant or not
@@ -109,19 +125,19 @@ df_all_res <- rbind(df_res_early_to_thin, df_res_thin_to_mature, df_res_early_to
 df_all_res$transition <- factor(df_all_res$transition)
 
 # Plot log2foldchange against -log10(adjusted p value)
-volcano_plot_transitions <- ggplot(df_all_res, aes(x = log2FoldChange, y = -log10(pvalue), color = significant)) +
+volcano_plot_transitions <- ggplot(df_all_res, aes(x = log2FoldChange, y = -log10(padj), color = significant)) +
   geom_point(alpha = 0.3) +
   # Add "2-fold" and "p-value" threshold lines for what is considered relevant and significant
   geom_vline(xintercept = c(-1, 1), linetype = "dashed", color = "black", alpha = 0.5) +
   geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "black", alpha = 0.5) +
   scale_color_manual(values = c("Downregulated" = "#0072B2", "Not Significant" = "#999999", "Upregulated" = "#E69F00")) +
-  labs(x = "Log2 Fold Change", y = "-Log10 p-value", 
+  labs(x = "Log2 Fold Change", y = "-Log10 padj", 
        #title = "Volcano Plot: Gene Expression Changes Across Biofilm Stages of Development"
        color = NULL) +
   theme(legend.position = "right") + 
   facet_wrap(~ transition) + 
-  theme_minimal() + 
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom") + 
+  theme_minimal()
 
 ggsave("../figs/03_volcano_plot_transitions.png", plot = volcano_plot_transitions, width = 10, height = 6, dpi = 600)
 
@@ -145,8 +161,7 @@ rownames(annotation_df) <- colnames(mat_vsd)
 colnames(mat_vsd) <- samples$sample_id
 
 # Create heatmap
-png("../figs/04_heatmap_top20.png", 
-    width = 10, height = 6, units = "in", res = 600)
+png("../figs/04_heatmap_top20.png", width = 10, height = 6, units = "in", res = 600)
 pheatmap(mat_vsd, 
          scale = "row",
          cluster_cols = FALSE, 
@@ -170,7 +185,6 @@ percentVar <- round(100 * attr(pca_data, "percentVar"))
 # Display biofilm stage by shape
 pca_plot_stages <- ggplot(pca_data, aes(PC1, PC2, shape = stage, color = stage)) +
   geom_point(size = 4, alpha = 0.75) + 
-  # Adjust color scale
   scale_color_manual(name = "Biofilm Stage", 
                      values = c("early" = "#F8766D",
                                 "thin" = "#00BA38",
@@ -178,7 +192,6 @@ pca_plot_stages <- ggplot(pca_data, aes(PC1, PC2, shape = stage, color = stage))
                      labels = c("early" = "Early",
                                 "thin" = "Thin",
                                 "mature" = "Mature")) +
-  # Adjust shape scale
   scale_shape_manual(name = "Biofilm Stage",
     values = c("early" = 16,
                "thin" = 17,
@@ -193,5 +206,24 @@ pca_plot_stages <- ggplot(pca_data, aes(PC1, PC2, shape = stage, color = stage))
 
 ggsave("../figs/05_pca_plot_stages.png", plot = pca_plot_stages, width = 10, height = 6, dpi = 600)
 
-# Save early to mature results after shrinkage and na.omit for functional enrichment analysis
-saveRDS(res_clean_early_to_mature, "../results/deseq2_results/res_clean_early_to_mature.rds")
+# Extract all Significant Genes from each stage ----
+# Create a function that extracts significant genes and whether they were up- or down-regulated
+get_sig_genes <- function(df, label) {
+  up <- df %>% filter(significant == "Upregulated") %>% pull(gene)
+  down <- df %>% filter(significant == "Downregulated") %>% pull(gene)
+  
+  res <- list()
+  res[[paste0(label, " (Up)")]] <- up
+  res[[paste0(label, " (Down)")]] <- down
+  return(res)
+}
+
+# Create a list of all significant genes and their transitions
+sig_list <- c(
+  get_sig_genes(df_res_early_to_thin, "Early to Thin"),
+  get_sig_genes(df_res_thin_to_mature, "Thin to Mature"),
+  get_sig_genes(df_res_early_to_mature, "Early to Mature")
+)
+
+# Save results for functional enrichment analysis
+saveRDS(sig_list, "../results/deseq2_results/sig_gene_lists.rds")
