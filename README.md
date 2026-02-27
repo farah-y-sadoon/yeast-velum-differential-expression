@@ -35,4 +35,37 @@ DGE was conducted in R v4.5.1 (28). A gene mapping was generated with the Biocon
 ### *Functional Enrichment Analysis (ORA)*
 ORA was also conducted in R. The `compareCluster` function from the clusterProfiler package v4.16.0 (31) was used for functional enrichment analysis across the biofilm development stages. The `enrichGO` and `enrichKEGG` options were used to compare GO biological processes (29) and KEGG metabolic pathways (30) that are overrepresented between clusters. For GO processes, ENTREZID names were required for matching genes, while KEGG pathways required ORF names for this process. Visualizations of the enrichment for both annotation databases were generated using enrichplot v1.28.4 (32).
 
+### *Pipeline*
+```mermaid
+graph LR
+    %% Data Acquisition
+    subgraph Data [Data Acquisition & Quality]
+        A[Entrez Direct / SRA Toolkit] --> B[Raw FASTQ Files]
+        B --> C[FastQC / MultiQC]
+        C --> D[Fastp Filtering]
+    end
+
+    %% Quantification
+    subgraph Quant [Quantification]
+        E[RefSeq Genome & Transcriptome] --> F[Build Salmon Index with Decoys]
+        D --> G[Salmon Selective Alignment]
+        F --> G
+    end
+
+    %% DGE Analysis
+    subgraph DGE [Differential Expression]
+        G --> H[tximport: Transcript to Gene Counts]
+        H --> I[DESeq2 DGE Analysis]
+        I --> J[lfcShrink: Apeglm]
+        J --> K[Visualization: ggplot2 / pheatmap]
+    end
+
+    %% Functional Enrichment
+    subgraph ORA [Functional Enrichment]
+        K --> L[clusterProfiler]
+        L --> M[enrichGO & enrichKEGG]
+        M --> N[Visualization: enrichplot / ggplot2]
+    end
+```
+Figure 1. Workflow used for transcript quantification, differential gene expression and functional enrichment analyse to assess functional changes in *Saccharomyces cerevisiae* samples across biofilm development stages.
 
