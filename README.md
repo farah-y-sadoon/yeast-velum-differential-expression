@@ -1,4 +1,4 @@
-# RNA-seq differential expression and functional analysis of Saccharomyces cerevisiae during sherry biofilm development
+# RNA-seq differential expression and functional analysis of *Saccharomyces cerevisiae* during sherry biofilm development
 
 ## Introduction
 
@@ -39,7 +39,7 @@ ORA was also conducted in R. The `compareCluster` function from the clusterProfi
 ```mermaid
 graph LR
     %% Data Acquisition
-    subgraph Data [Data Acquisition & Quality]
+    subgraph Data [Data Acquisition & Quality Assessment]
         A[Entrez Direct / SRA Toolkit] --> B[Raw FASTQ Files]
         B --> C[FastQC / MultiQC]
         C --> D[Fastp Filtering]
