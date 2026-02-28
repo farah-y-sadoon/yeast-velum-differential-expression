@@ -77,8 +77,7 @@ Filtering with Fastp (24) for reads in which at least 80 percent of bases with P
 ![Figure 2](./figs/02_general_stats_violin_plot.png)
 Figure 2. MultiQC (23) report summary comparing general read statistics across all 9 replicates before and after filtering with Fastp (24). Blue violin plots describe Fastp statistics after removing reads where more than 20 percent of bases had Phred scores below 30, and green violin plots describe raw read statistics.
 ​
-
-Differential Gene Expression Analysis Reveals Patterns Across Biofilm Development Stages
+### *Differential Gene Expression Analysis Reveals Patterns Across Biofilm Development Stages*
 PCA revealed that 92% of the total variance in gene expression is captured by the first two principal components. PC1 captures 68% of the variance and primarily separates the early and mature biofilm stages (Figure 3), suggesting that these groups represent the most distinct transcriptomic profiles. PC2 captures 24% of the variance and separates the thin biofilm stage from the early and mature stages, suggesting a unique intermediate state during biofilm development (Figure 3).
 
 ![Figure 3](./figs/03_pca_plot_stages.png)
@@ -98,7 +97,7 @@ The 20 most significantly differentially expressed genes between the early and m
 Figure 5. Heatmap of the top 20 differentially expressed genes during biofilm development. Gene expression levels were normalized using a variance stabilizing transformation (VST) and row-scaled to visualize relative changes across the three developmental stages (green = early, pink = thin, blue = mature). Each row represents an individual gene, and each column represents a biological replicate (n = 3 per stage). The color gradient indicates relative upregulation (yellow), downregulation (blue), or mean expression (white). Representative genes FLO11, HXT1, and OLE1 illustrate the transition from early-stage growth to mature biofilm.
 ​
 
-Overrepresentation Analysis Highlights Functional Changes Across Biofilm Development Stages
+### *Overrepresentation Analysis Highlights Functional Changes Across Biofilm Development Stages*
 GO overrepresentation analysis of biological processes revealed that terms associated with upregulation in the transition between early and thin stage of biofilm development are involved in growth and biosynthesis, including “cytoplasmic translation”, “cellular respiration”, “ribosomal small subunit biogenesis” and “ribosome assembly”, while terms associated with metabolic and catabolic processes such as “purine-containing compound metabolic process” and “pyruvate metabolic process” were enriched in the downregulated group (Figure 6A). In the thin to mature stage transition, “anatomical structure morphogenesis” was overrepresented in the upregulated group, while “lipid biosynthesis” was enriched in the downregulated group. Interestingly, in the early to mature transition, “mitochondrial respiratory chain complex assembly” and “lipid metabolic process” were enriched terms for the up- and downregulated groups, respectively (Figure 6A).
 
 KEGG analysis revealed that the “ribosome” pathway was enriched for the early to thin and early to mature transitions in the upregulated group (Figure 6B), which is consistent with overrepresented GO biological process terms (Figure 6A). Transition from thin to mature biofilm was characterized by the “starch and sucrose metabolism” pathway for the upregulated group, and the “fatty acid biosynthesis” pathway for the downregulated group (Figure 6B). Interestingly, “oxidative phosphorylation” and “citrate cycle (TCA cycle)” were enriched in the upregulated group across multiple stages, and “steroid biosynthesis” was associated with the downregulated group across all stages (Figure 6B).
