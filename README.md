@@ -67,5 +67,42 @@ graph LR
         M --> N[Visualization: enrichplot / ggplot2]
     end
 ```
-Figure 1. Workflow used for transcript quantification, differential gene expression and functional enrichment analyse to assess functional changes in *Saccharomyces cerevisiae* samples across biofilm development stages.
+Figure 1. Workflow used for transcript quantification, differential gene expression and functional enrichment analyses to assess functional changes in *Saccharomyces cerevisiae* samples across biofilm development stages.
 
+## Results
+
+### *Statistics after Filtering Confirm High-Quality Reads*
+Filtering with Fastp (24) for reads in which at least 80 percent of bases with Phred scores of a minimum of 30 were retained, approximately 95% of reads across replicates (Figure 2). This indicates that the raw sequencing data were already of high quality, providing confidence that any residual sequencing errors are unlikely to have a meaningful impact on downstream analyses.
+
+![Figure 2](./figs/02_general_stats_violin_plot.png)
+Figure 2. MultiQC (23) report summary comparing general read statistics across all 9 replicates before and after filtering with Fastp (24). Blue violin plots describe Fastp statistics after removing reads where more than 20 percent of bases had Phred scores below 30, and green violin plots describe raw read statistics.
+​
+
+Differential Gene Expression Analysis Reveals Patterns Across Biofilm Development Stages
+PCA revealed that 92% of the total variance in gene expression is captured by the first two principal components. PC1 captures 68% of the variance and primarily separates the early and mature biofilm stages (Figure 3), suggesting that these groups represent the most distinct transcriptomic profiles. PC2 captures 24% of the variance and separates the thin biofilm stage from the early and mature stages, suggesting a unique intermediate state during biofilm development (Figure 3).
+
+![Figure 3](./figs/03_pca_plot_stages.png)
+Figure 3. Principal Component Analysis (PCA) plot visualizing gene expression profiles across the stages of S. cerevisiae biofilm development after variance stabilizing transformation (VST). PC1 (68%) and PC2 (24%) capture 92% of the total variance, where early (red circles), thin (green triangles), and mature (blue squares) show distinct clustering.
+​
+
+DGE with DESeq2 revealed that significant log2 fold-changes (padj<0.05 and |log2FC|>1) occurred across transitions between biofilm development stages (Figure 4). The distribution of up- and downregulated genes is symmetrical, suggesting that regulatory mechanisms in each stage are being systematically reprogrammed to adapt to changing environmental conditions (Figure 4). Interestingly, the transition between the thin to mature stage displays less intense expression changes, suggesting that specific reprogramming occurs in the early stages of biofilm development (Figure 4).
+
+​
+![Figure 4](./figs/04_volcano_plot_transitions.png)
+Figure 4. Volcano plot comparing differentially expressed genes across biofilm stages of development. Genes were considered differentially expressed if their transcript counts revealed a 2-fold change and were statistically significant (padj < 0.05) after the Benjamini-Hochberg (BH) correction to control false discovery rate (FDR). Blue dots represent downregulated genes, yellow dots represent upregulated genes, and grey dots represent genes that were not statistically significant.
+​
+
+The 20 most significantly differentially expressed genes between the early and mature stages were selected for further investigation. Following a variance stabilizing transformation (VST), gene expression levels were row-scaled to visualize relative changes across biofilm development (Figure 5). Distinct expression groups are characterized by inverse expression patterns, where genes highly expressed in the early stage were consistently downregulated in the mature stage, and vice versa. Interestingly, these genes display an intermediate relative expression level in the thin stage. This suggests that the biofilm may have crossed a threshold, triggering a shift in regulatory mechanisms that allows it to develop into a mature state (Figure 5). Among these genes, FLO11, HXT1, and OLE1 characterize the expression patterns between the initial and final stages of development.
+
+![Figure 5](./figs/05_heatmap_top20.png)
+Figure 5. Heatmap of the top 20 differentially expressed genes during biofilm development. Gene expression levels were normalized using a variance stabilizing transformation (VST) and row-scaled to visualize relative changes across the three developmental stages (green = early, pink = thin, blue = mature). Each row represents an individual gene, and each column represents a biological replicate (n = 3 per stage). The color gradient indicates relative upregulation (yellow), downregulation (blue), or mean expression (white). Representative genes FLO11, HXT1, and OLE1 illustrate the transition from early-stage growth to mature biofilm.
+​
+
+Overrepresentation Analysis Highlights Functional Changes Across Biofilm Development Stages
+GO overrepresentation analysis of biological processes revealed that terms associated with upregulation in the transition between early and thin stage of biofilm development are involved in growth and biosynthesis, including “cytoplasmic translation”, “cellular respiration”, “ribosomal small subunit biogenesis” and “ribosome assembly”, while terms associated with metabolic and catabolic processes such as “purine-containing compound metabolic process” and “pyruvate metabolic process” were enriched in the downregulated group (Figure 6A). In the thin to mature stage transition, “anatomical structure morphogenesis” was overrepresented in the upregulated group, while “lipid biosynthesis” was enriched in the downregulated group. Interestingly, in the early to mature transition, “mitochondrial respiratory chain complex assembly” and “lipid metabolic process” were enriched terms for the up- and downregulated groups, respectively (Figure 6A).
+
+KEGG analysis revealed that the “ribosome” pathway was enriched for the early to thin and early to mature transitions in the upregulated group (Figure 6B), which is consistent with overrepresented GO biological process terms (Figure 6A). Transition from thin to mature biofilm was characterized by the “starch and sucrose metabolism” pathway for the upregulated group, and the “fatty acid biosynthesis” pathway for the downregulated group (Figure 6B). Interestingly, “oxidative phosphorylation” and “citrate cycle (TCA cycle)” were enriched in the upregulated group across multiple stages, and “steroid biosynthesis” was associated with the downregulated group across all stages (Figure 6B).
+
+​
+![Figure 6](./figs/06_ora_go_kegg_plot.png)
+Figure 6. Dot-plot representation of enriched (A) GO biological processes and (B) KEGG pathways across all stages of biofilm development. Each cluster was also organised by upregulated and downregulated genes. Dot color represents adjusted p-values (Benjamini-Hochberg), with a gradient from red (high significance) to blue (lower relative significance). Dot size represents the Gene Ratio, defined as the proportion of differentially expressed genes for a specific process or pathway.
