@@ -12,30 +12,30 @@ Beyond alignment, differential gene expression (DGE) analysis requires careful s
 
 *S. cerevisiae* is both culturally and industrially important for its use in bread, beer, and wine production, and for its well-characterized, relatively small eukaryotic genome (16). Understanding the genes, processes, and pathways that are active during fermentation is key to optimizing these products. Additionally, *S. cerevisiae* serves as a powerful model organism for transcriptomic studies due to its compact, well-characterized genome and moderate intron content (16, 17).
 
-​The aims of this analysis are to evaluate an appropriate workflow RNA-seq analysis of *S. cerevisiae* and perform a functional assessment of the biological changes occurring during fermentation process in sherry production. The data was obtained from Eldarov and colleagues’ 2018 study of three flor yeast strains across biofilm development stages (18). The workflow is based on a 2025 review by Dawadi and colleagues discussing a practical guide to RNA sequencing data analysis (7), and methodology for gene-level abundance inference proposed by Soneson, Love, and Robinson in 2015 (19). RNA-seq reads were extracted from BioProject PRJNA592304, with Entrez-Direct (20) and SRA Toolkit (21). The reference genome, transcriptome and annotation files were taken from the NCBI RefSeq database (GCF_000146045.2_R64). While the flor yeast strain may differ from the reference assembly, the standardized formatting and annotation were selected to ensure compatibility with downstream DGE tools. Prior to transcript quantification, FastQC (22) and MultiQC (23) were used for read quality assessment before and after filtering with Fastp (24). Trimming was not conducted because pseudoalignment permits soft-clipping residual adapters, and per-base quality trimming has been shown to dilute downstream analytical power (7, 25, 26). Salmon (8) was used in its default quasi-mapping form to quantify transcripts from 9 samples across 3 biofilm stages. Selective alignment was implemented by incorporating decoy sequences to increase the accuracy of transcript mapping (27). Differential gene expression analysis and functional enrichment were performed in R (28). DGE was conducted using DESeq2 (13), including log2 fold-change shrinkage and visualization of expression patterns. Functional over-representation analysis (ORA) was carried out to identify enriched biological processes and metabolic pathways based on Gene Ontology (GO, 29) and Kyoto Encyclopedia of Genes and Genomes (KEGG, 30) annotations. All analyses in R were implemented using the tximport (19), DESeq2 (13), clusterProfiler (31), enrichplot (32), apeglm (33), rtracklayer (34), pheatmap (35), tidyverse (36), and the *S. cerevisiae* annotation database (org.Sc.sgd.db, 37) packages.
+​The aims of this study are to evaluate an appropriate workflow for RNA-seq analysis of *S. cerevisiae* and perform a functional assessment of the biological changes occurring during the fermentation process in sherry production. The data was obtained from Eldarov and colleagues’ 2018 study of three flor yeast strains across biofilm development stages (18). The workflow is based on a 2025 review by Dawadi and colleagues discussing a practical guide to RNA sequencing data analysis (7), and methodology for gene-level abundance inference proposed by Soneson, Love, and Robinson in 2015 (19). RNA-seq reads were extracted from BioProject PRJNA592304, with Entrez-Direct (20) and SRA Toolkit (21). The reference genome, transcriptome and annotation files were taken from the NCBI RefSeq database (GCF_000146045.2_R64). While the flor yeast strain may differ from the reference assembly, the standardized formatting and annotation were selected to ensure compatibility with downstream DGE tools. Prior to transcript quantification, FastQC (22) and MultiQC (23) were used for read quality assessment before and after filtering with Fastp (24). Trimming was not conducted because pseudoalignment permits soft-clipping residual adapters, and per-base quality trimming has been shown to dilute downstream analytical power (7, 25, 26). Salmon (8) was used in its default quasi-mapping form to quantify transcripts from 9 samples across 3 biofilm stages. Selective alignment was implemented by incorporating decoy sequences to increase the accuracy of transcript mapping (27). Differential gene expression analysis and functional enrichment were performed in R (28). DGE was conducted using DESeq2 (13), including log2 fold-change shrinkage and visualization of expression patterns. Functional over-representation analysis (ORA) was carried out to identify enriched biological processes and metabolic pathways based on Gene Ontology (GO, 29) and Kyoto Encyclopedia of Genes and Genomes (KEGG, 30) annotations. All analyses in R were implemented using the tximport (19), DESeq2 (13), clusterProfiler (31), enrichplot (32), apeglm (33), rtracklayer (34), pheatmap (35), tidyverse (36), and the *S. cerevisiae* annotation database (org.Sc.sgd.db, 37) packages.
 
 ## Methods
 
-### *Computational Resources*
+### Computational Resources
 All analyses were conducted on a local Apple MacBook Pro (M4 architecture). Conda v25.7.0 (38) was used to manage virtual environments and dependencies.
 
-### *Data Acquisition*
+### Data Acquisition
 The *S. cerevisiae* S288C reference genome, transcriptome, and annotation (GCF_000146045.2) were obtained from the NCBI RefSeq database. The `esearch` and `efetch` tools from Entrez Direct v25.1 (20) were used to retrieve SRR accession numbers from BioProject PRJNA592304, and `prefetch` and `fasterq-dump` from SRA Toolkit v3.2.1 (21) were used to download and convert SRA files to FASTQ format.
 
-### *Quality Control*
+### Quality Control
 Quality assessment of reads was conducted for each sample with FastQC v0.12.1 (22) and consolidated into a single report with MultiQC v1.33 (23) before and after filtering reads. Fastp v1.1.0 (24) was run in parallel mode using `parallel.py` with `--qualified_quality_phred 30` and `--unqualified_percent_limit 20` to remove reads with more than 20 percent of bases with Phred scores below 30. The `--disable_length_filtering` and `--disable_adapter_trimming` options were used because results from MultiQC confirmed all reads were 50 base-pairs in length, and that adapter content was low. Downstream, Salmon v1.10.3 (8) with `--softclip` was used to handle adapter sequences.
 
-### *Gene Expression Quantification*
+### Gene Expression Quantification
 Decoy sequences were extracted from the reference genome and concatenated with the reference transcriptome following Salmon documentation (27). Next, `salmon index` was run without the `--gencode` option because the reference genome did not contain Gencode metadata. For quantification, `salmon quant` was run following the documentation (39) with `--validateMappings` enabled to perform selective alignment against the decoy sequences. The `--softclip` option was used to permit soft-clipping of mismatched read ends during selective alignment to mitigate residual adapter sequences interfering with mapping accuracy.
 
-### *Statistical Analysis and Visualization of Differentially Expressed Genes*
+### Statistical Analysis and Visualization of Differentially Expressed Genes
 DGE was conducted in R v4.5.1 (28). A gene mapping was generated with the Bioconductor *S. cerevisiae* annotation database v3.21.0 (37), extracting ORF, ENTREZID and GENENAME fields for compatibility with functional enrichment analysis tools. Transcript-level abundance estimates from Salmon were summarized to gene counts using tximport v1.36.1 (19), and differential gene expression analysis across the early, thin, and mature biofilm stages was performed with DESeq2 v1.48.2 (13). Log2 fold-change shrinkage was performed with `lfcShrink` from DESeq2 with the apeglm method v1.30.0 (33). Since DESeq2 reports contrasts relative to a reference level, the design factor was re-leveled to obtain shrinkage estimates for all pairwise comparisons between biofilm development stages. Visualizations were created with ggplot2 v4.0.2 (40) and pheatmap v1.0.13 (35).
 
 
-### *Functional Enrichment Analysis (ORA)*
+### Functional Enrichment Analysis (ORA)
 ORA was also conducted in R. The `compareCluster` function from the clusterProfiler package v4.16.0 (31) was used for functional enrichment analysis across the biofilm development stages. The `enrichGO` and `enrichKEGG` options were used to compare GO biological processes (29) and KEGG metabolic pathways (30) that are overrepresented between clusters. For GO processes, ENTREZID names were required for matching genes, while KEGG pathways required ORF names for this process. Visualizations of the enrichment for both annotation databases were generated using enrichplot v1.28.4 (32).
 
-### *Pipeline*
+### Pipeline
 ```mermaid
 graph LR
     %% Data Acquisition
@@ -71,13 +71,13 @@ Figure 1. Workflow used for transcript quantification, differential gene express
 
 ## Results
 
-### *Statistics after Filtering Confirm High-Quality Reads*
-Filtering with Fastp (24) for reads in which at least 80 percent of bases with Phred scores of a minimum of 30 were retained, approximately 95% of reads across replicates (Figure 2). This indicates that the raw sequencing data were already of high quality, providing confidence that any residual sequencing errors are unlikely to have a meaningful impact on downstream analyses.
+### Statistics after Filtering Confirm High-Quality Reads
+Filtering with Fastp (24) for reads in which at least 80 percent of bases with Phred scores of a minimum of 30 led to approximately 95% of reads across replicates being retained (Figure 2). This indicates that the raw sequencing data were already of high quality, providing confidence that any residual sequencing errors are unlikely to have a meaningful impact on downstream analyses.
 
 ![Figure 2](./figs/02_general_stats_violin_plot.png)
 Figure 2. MultiQC (23) report summary comparing general read statistics across all 9 replicates before and after filtering with Fastp (24). Blue violin plots describe Fastp statistics after removing reads where more than 20 percent of bases had Phred scores below 30, and green violin plots describe raw read statistics.
 ​
-### *Differential Gene Expression Analysis Reveals Patterns Across Biofilm Development Stages*
+### Differential Gene Expression Analysis Reveals Patterns Across Biofilm Development Stages
 PCA revealed that 92% of the total variance in gene expression is captured by the first two principal components. PC1 captures 68% of the variance and primarily separates the early and mature biofilm stages (Figure 3), suggesting that these groups represent the most distinct transcriptomic profiles. PC2 captures 24% of the variance and separates the thin biofilm stage from the early and mature stages, suggesting a unique intermediate state during biofilm development (Figure 3).
 
 ![Figure 3](./figs/03_pca_plot_stages.png)
@@ -91,20 +91,20 @@ DGE with DESeq2 revealed that significant log2 fold-changes (padj<0.05 and |log2
 Figure 4. Volcano plot comparing differentially expressed genes across biofilm stages of development. Genes were considered differentially expressed if their transcript counts revealed a 2-fold change and were statistically significant (padj < 0.05) after the Benjamini-Hochberg (BH) correction to control false discovery rate (FDR). Blue dots represent downregulated genes, yellow dots represent upregulated genes, and grey dots represent genes that were not statistically significant.
 ​
 
-The 20 most significantly differentially expressed genes between the early and mature stages were selected for further investigation. Following a variance stabilizing transformation (VST), gene expression levels were row-scaled to visualize relative changes across biofilm development (Figure 5). Distinct expression groups are characterized by inverse expression patterns, where genes highly expressed in the early stage were consistently downregulated in the mature stage, and vice versa. Interestingly, these genes display an intermediate relative expression level in the thin stage. This suggests that the biofilm may have crossed a threshold, triggering a shift in regulatory mechanisms that allows it to develop into a mature state (Figure 5). Among these genes, FLO11 and *OLE1* characterize the expression patterns between the initial and final stages of development.
+The 20 most significantly differentially expressed genes between the early and mature stages were selected for further investigation. Following a variance stabilizing transformation (VST), gene expression levels were row-scaled to visualize relative changes across biofilm development (Figure 5). Distinct expression groups are characterized by inverse expression patterns, where genes highly expressed in the early stage were consistently downregulated in the mature stage, and vice versa. Interestingly, these genes display an intermediate relative expression level in the thin stage. This suggests that the biofilm may have crossed a threshold, triggering a shift in regulatory mechanisms that allow it to develop into a mature state (Figure 5). Among these genes, *FLO11* and *OLE1* characterize the expression patterns between the initial and final stages of development.
 
 ![Figure 5](./figs/05_heatmap_top20.png)
-Figure 5. Heatmap of the top 20 differentially expressed genes during biofilm development. Gene expression levels were normalized using a variance stabilizing transformation (VST) and row-scaled to visualize relative changes across the three developmental stages (green = early, pink = thin, blue = mature). Each row represents an individual gene, and each column represents a biological replicate (n = 3 per stage). The color gradient indicates relative upregulation (yellow), downregulation (blue), or mean expression (white). Representative genes FLO11 and *OLE1* illustrate the transition from early-stage growth to mature biofilm.
+Figure 5. Heatmap of the top 20 differentially expressed genes during biofilm development. Gene expression levels were normalized using a variance stabilizing transformation (VST) and row-scaled to visualize relative changes across the three developmental stages (green = early, pink = thin, blue = mature). Each row represents an individual gene, and each column represents a biological replicate (n = 3 per stage). The color gradient indicates relative upregulation (yellow), downregulation (blue), or mean expression (white). Representative genes *FLO11* and *OLE1* illustrate the transition from early-stage growth to mature biofilm.
 ​
 
-### *Overrepresentation Analysis Highlights Functional Changes Across Biofilm Development Stages*
-GO overrepresentation analysis of biological processes revealed that terms associated with upregulation in the transition between early and thin stage of biofilm development are involved in growth and biosynthesis, including “cytoplasmic translation”, “cellular respiration”, “ribosomal small subunit biogenesis” and “ribosome assembly”, while terms associated with metabolic and catabolic processes such as “purine-containing compound metabolic process” and “pyruvate metabolic process” were enriched in the downregulated group (Figure 6A). In the thin to mature stage transition, “anatomical structure morphogenesis” was overrepresented in the upregulated group, while “lipid biosynthesis” was enriched in the downregulated group. Interestingly, in the early to mature transition, “mitochondrial respiratory chain complex assembly” and “lipid metabolic process” were enriched terms for the up- and downregulated groups, respectively (Figure 6A).
+### Overrepresentation Analysis Highlights Functional Changes Across Biofilm Development Stages
+GO overrepresentation analysis of biological processes revealed that terms associated with upregulation during the transition from the early to the thin stage of biofilm development were primarily involved in growth and biosynthesis, including “cytoplasmic translation,” “cellular respiration,” “ribosomal small subunit biogenesis,” and “ribosome assembly.” In contrast, terms related to metabolic and catabolic processes, such as “purine-containing compound metabolic process” and “pyruvate metabolic process,” were enriched among the downregulated genes (Figure 6A). In the thin to mature stage transition, “anatomical structure morphogenesis” was overrepresented in the upregulated group, while “lipid biosynthesis” was enriched in the downregulated group. Interestingly, in the early to mature transition, “mitochondrial respiratory chain complex assembly” and “lipid metabolic process” were enriched terms for the up- and downregulated groups, respectively (Figure 6A).
 
 KEGG analysis revealed that the “ribosome” pathway was enriched for the early to thin and early to mature transitions in the upregulated group (Figure 6B), which is consistent with overrepresented GO biological process terms (Figure 6A). Transition from thin to mature biofilm was characterized by the “starch and sucrose metabolism” pathway for the upregulated group, and the “fatty acid biosynthesis” pathway for the downregulated group (Figure 6B). Interestingly, “oxidative phosphorylation” and “citrate cycle (TCA cycle)” were enriched in the upregulated group across multiple stages, and “steroid biosynthesis” was associated with the downregulated group across all stages (Figure 6B).
 
 ​
 ![Figure 6](./figs/06_ora_go_kegg_plot.png)
-Figure 6. Dot-plot representation of enriched (A) GO biological processes and (B) KEGG pathways across all stages of biofilm development. Each cluster was also organised by upregulated and downregulated genes. Dot color represents adjusted p-values (Benjamini-Hochberg), with a gradient from red (high significance) to blue (lower relative significance). Dot size represents the Gene Ratio, defined as the proportion of differentially expressed genes for a specific process or pathway.
+Figure 6. Dot-plot representation of enriched (A) GO biological processes and (B) KEGG pathways across all stages of biofilm development. Each cluster was also organised by upregulated and downregulated genes. Dot color represents adjusted p-values (Benjamini-Hochberg correction), with a gradient from red (high significance) to blue (lower relative significance). Dot size represents the Gene Ratio, defined as the proportion of differentially expressed genes for a specific process or pathway.
 
 ## Discussion
 
@@ -132,6 +132,96 @@ In contrast, DGE revealed that *OLE1* transcripts were significantly downregulat
 
 The observations about individual genes *FLO11* and *OLE1* are reflected in the functional enrichment analysis with GO biological processes and KEGG pathways. The thin-to-mature transition is characterized by the “anatomical structure morphogenesis” GO term, which is consistent with increased presence of *FLO11* (Figure 5, 6A). Together, these observations suggest that a critical threshold was crossed between the early to thin transition that triggered physiological and structural changes. Additionally, the significant downregulation of *OLE1* and the “fatty acid biosynthetic process” suggests a metabolic change as ethanol concentrations decline (Figure 6B). Overall, these functional responses highlight the specialized growth patterns and survival processes that flor yeasts undergo during sherry production.
 
-​This study successfully characterizes the transcriptomic landscape of *Saccharomyces cerevisiae* during the transition from early to mature flor biofilm stages. By integrating differential gene expression analysis with functional enrichment, this workflow identified a potential regulatory threshold, leading to the regulation of structural genes like *FLO11* and metabolic indicators like *OLE1*. Ultimately, this analysis provides insights into the genetic reprogramming that occurs during biofilm maturation and offers a deeper understanding of the physiological adaptations that define the unique process of sherry production.
+​This study successfully characterizes the transcriptomic landscape of *Saccharomyces cerevisiae* during the transition from early to mature biofilm stages. By integrating differential gene expression analysis with functional enrichment, this workflow identifies a potential regulatory threshold, leading to the regulation of structural genes like *FLO11* and metabolic indicators like *OLE1*. Ultimately, this analysis provides insights into the genetic reprogramming that occurs during biofilm maturation and offers a deeper understanding of the physiological adaptations that define the unique process of sherry production.
 
 ## References
+
+1. Wang, Z., Gerstein, M., & Snyder, M. (2009). RNA-seq: A revolutionary tool for transcriptomics. Nature Reviews Genetics, 10(1), 57–63. https://doi.org/10.1038/nrg2484
+
+2. Valdés, A., Ibáñez, C., Simó, C., & García-Cañas, V. (2013). Recent transcriptomics advances and emerging applications in food science. TrAC Trends in Analytical Chemistry, 52, 142–154. https://doi.org/10.1016/j.trac.2013.06.014
+
+3. Nagalakshmi, U., Wang, Z., Waern, K., Shou, C., Raha, D., Gerstein, M., & Snyder, M. (2008). The transcriptional landscape of the yeast genome defined by RNA sequencing. Science, 320(5881), 1344–1349. https://doi.org/10.1126/science.1158441
+
+4. Solieri, L., Dakal, T. C., & Giudici, P. (2012). Next-generation sequencing and its potential impact on Food Microbial Genomics. Annals of Microbiology, 63(1), 21–37. https://doi.org/10.1007/s13213-012-0478-8 
+
+5. McGettigan, P. A. (2013). Transcriptomics in the RNA-seq era. Current Opinion in Chemical Biology, 17(1), 4–11. https://doi.org/10.1016/j.cbpa.2012.12.008 
+
+6. Corchete, L. A., Rojas, E. A., Alonso-López, D., De Las Rivas, J., Gutiérrez, N. C., & Burguillo, F. J. (2020). Systematic comparison and assessment of RNA-seq procedures for gene expression quantitative analysis. Scientific Reports, 10(1). https://doi.org/10.1038/s41598-020-76881-x 
+
+7. Dawadi, P., Pokharel, B., Shrestha, A., Niraula, D., Naeem, A., Miura, S., Roy, M., & Nepal, S. (2025). From bench to bytes: A practical guide to RNA sequencing data analysis. Frontiers in Genetics, 16. https://doi.org/10.3389/fgene.2025.1697922 
+
+8. Patro, R., Duggal, G., Love, M. I., Irizarry, R. A., & Kingsford, C. (2017). Salmon provides fast and bias-aware quantification of transcript expression. Nature Methods, 14(4), 417–419. https://doi.org/10.1038/nmeth.4197 
+
+9. Bray, N. L., Pimentel, H., Melsted, P., & Pachter, L. (2016). Near-optimal probabilistic RNA-seq quantification. Nature Biotechnology, 34(5), 525–527. https://doi.org/10.1038/nbt.3519 
+
+10. Sarantopoulou, D., Brooks, T. G., Nayak, S., Mrčela, A., Lahens, N. F., & Grant, G. R. (2021). Comparative evaluation of full-length isoform quantification from RNA-seq. BMC Bioinformatics, 22(1). https://doi.org/10.1186/s12859-021-04198-1 
+
+11. Langmead, B., & Salzberg, S. L. (2012). Fast gapped-read alignment with bowtie 2. Nature Methods, 9(4), 357–359. https://doi.org/10.1038/nmeth.1923 
+
+12. Srivastava, A., Malik, L., Sarkar, H., Zakeri, M., Almodaresi, F., Soneson, C., Love, M. I., Kingsford, C., & Patro, R. (2020). Alignment and mapping methodology influence transcript abundance estimation. Genome Biology, 21(1). https://doi.org/10.1186/s13059-020-02151-8 
+
+13. Love, M. I., Huber, W., & Anders, S. (2014). Moderated estimation of fold change and dispersion for RNA-seq data with deseq2. Genome Biology, 15(12). https://doi.org/10.1186/s13059-014-0550-8 
+
+14. Chen, Y., Chen, L., Lun, A. T. L., Baldoni, P. L., & Smyth, G. K. (2025). Edger V4: Powerful differential analysis of sequencing data with expanded functionality and improved support for small counts and larger datasets. Nucleic Acids Research, 53(2). https://doi.org/10.1093/nar/gkaf018
+
+15. Zhang, Z. H., Jhaveri, D. J., Marshall, V. M., Bauer, D. C., Edson, J., Narayanan, R. K., Robinson, G. J., Lundberg, A. E., Bartlett, P. F., Wray, N. R., & Zhao, Q.-Y. (2014). A comparative study of techniques for differential expression analysis on RNA-Seq Data. PLoS ONE, 9(8). https://doi.org/10.1371/journal.pone.0103207 
+
+16. Parapouli, M., Vasileiadi, A., Afendra, A.-S., & Hatziloukas, E. (2020). Saccharomyces cerevisiae and its industrial applications. AIMS Microbiology, 6(1), 1–32. https://doi.org/10.3934/microbiol.2020001 
+
+17. Parenteau, J., Durand, M., Véronneau, S., Lacombe, A.-A., Morin, G., Guérin, V., Cecez, B., Gervais-Bird, J., Koh, C.-S., Brunelle, D., Wellinger, R. J., Chabot, B., & Abou Elela, S. (2008). Deletion of many yeast introns reveals a minority of genes that require splicing for function. Molecular Biology of the Cell, 19(5), 1932–1941. https://doi.org/10.1091/mbc.e07-12-1254 
+
+18. Mardanov, A. V., Eldarov, M. A., Beletsky, A. V., Tanashchuk, T. N., Kishkovskaya, S. A., & Ravin, N. V. (2020). Transcriptome profile of yeast strain used for biological wine aging revealed dynamic changes of gene expression in course of Flor Development. Frontiers in Microbiology, 11. https://doi.org/10.3389/fmicb.2020.00538 
+
+19. Soneson, C., Love, M. I., & Robinson, M. D. (2016). Differential analyses for RNA-seq: Transcript-level estimates improve gene-level inferences. F1000Research, 4, 1521. https://doi.org/10.12688/f1000research.7563.2 
+
+20. Kans, J. (2025, March 25). Entrez® direct: E-utilities on the Unix Command Line. Entrez® Programming Utilities Help [Internet]. https://www.ncbi.nlm.nih.gov/books/NBK179288/ 
+
+21. U.S. National Library of Medicine. (n.d.). 01. downloading SRA Toolkit · NCBI/SRA-Tools Wiki · github. National Center for Biotechnology Information. https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=software 
+
+22. Babraham Bioinformatics. (n.d.). FastQC. FastQC a quality control tool for high throughput sequence data. https://www.bioinformatics.babraham.ac.uk/projects/fastqc/ 
+
+23. Ewels, P., Magnusson, M., Lundin, S., & Käller, M. (2016). MultiQC: Summarize analysis results for multiple tools and samples in a single report. Bioinformatics, 32(19), 3047–3048. https://doi.org/10.1093/bioinformatics/btw354 
+
+24. Chen, S. (2025). Fastp 1.0: An ultra‐fast all‐round tool for FASTQ data quality control and preprocessing. iMeta, 4(5). https://doi.org/10.1002/imt2.70078 
+
+25. Williams, C. R., Baccarella, A., Parrish, J. Z., & Kim, C. C. (2016). Trimming of sequence reads alters RNA-seq gene expression estimates. BMC Bioinformatics, 17(1). https://doi.org/10.1186/s12859-016-0956-2 
+
+26. Liao, Y., & Shi, W. (2020). Read trimming is not required for mapping and quantification of RNA-seq reads at the Gene Level. NAR Genomics and Bioinformatics, 2(3). https://doi.org/10.1093/nargab/lqaa068 
+
+27. Combine Lab. (2019, October 30). Selective alignment. Selective Alignment. https://combine-lab.github.io/alevin-tutorial/2019/selective-alignment/ 
+
+28. R Core Team. (n.d.). R: A Language and Environment for Statistical Computing. R Foundation for Statistical Computing. R. https://www.r-project.org/
+
+29. Ashburner, M., Ball, C. A., Blake, J. A., Botstein, D., Butler, H., Cherry, J. M., Davis, A. P., Dolinski, K., Dwight, S. S., Eppig, J. T., Harris, M. A., Hill, D. P., Issel-Tarver, L., Kasarskis, A., Lewis, S., Matese, J. C., Richardson, J. E., Ringwald, M., Rubin, G. M., & Sherlock, G. (2000). Gene ontology: Tool for the unification of biology. Nature Genetics, 25(1), 25–29. https://doi.org/10.1038/75556 
+
+30. Kanehisa, M. (2000). Kegg: Kyoto encyclopedia of genes and genomes. Nucleic Acids Research, 28(1), 27–30. https://doi.org/10.1093/nar/28.1.27 
+
+31. Xu, S., Hu, E., Cai, Y., Xie, Z., Luo, X., Zhan, L., Tang, W., Wang, Q., Liu, B., Wang, R., Xie, W., Wu, T., Xie, L., & Yu, G. (2024). Using clusterprofiler to characterize Multiomics Data. Nature Protocols, 19(11), 3292–3320. https://doi.org/10.1038/s41596-024-01020-z 
+
+32. Yuq, G. (2025). enrichplot: Visualization of Functional Enrichment Result. Bioconductor. https://bioconductor.org/packages/release/bioc/html/enrichplot.html 
+
+33. Zhu, A., Ibrahim, J. G., & Love, M. I. (2018). Heavy-tailed prior distributions for sequence count data: Removing the noise and preserving large differences. Bioinformatics, 35(12), 2084–2092. https://doi.org/10.1093/bioinformatics/bty895 
+
+34. Lawrence, M., Gentleman, R., & Carey, V. (2009). Rtracklayer: An R package for interfacing with genome browsers. Bioinformatics, 25(14), 1841–1842. https://doi.org/10.1093/bioinformatics/btp328 
+
+35. Kolde, R. (2025, June 5). Pheatmap: Pretty heatmaps. The Comprehensive R Archive Network. https://cran.r-project.org/package=pheatmap 
+
+36. Wickham, H., Averick, M., Bryan, J., Chang, W., McGowan, L., François, R., Grolemund, G., Hayes, A., Henry, L., Hester, J., Kuhn, M., Pedersen, T., Miller, E., Bache, S., Müller, K., Ooms, J., Robinson, D., Seidel, D., Spinu, V., … Yutani, H. (2019). Welcome to the Tidyverse. Journal of Open Source Software, 4(43), 1686. https://doi.org/10.21105/joss.01686 
+
+37. Org.Sc.sgd.db. Bioconductor. (n.d.). https://bioconductor.org/packages/release/data/annotation/html/org.Sc.sgd.db.html
+
+38. Conda. (n.d.). Conda/citation.cff at main · Conda/conda. GitHub. https://github.com/conda/conda/blob/main/CITATION.cff 
+
+39. Combine Lab. (n.d.). Getting started. Salmon: Fast, accurate and bias-aware transcript quantification from RNA-seq data. https://combine-lab.github.io/salmon/getting_started/ 
+
+40. Wickham, H. (n.d.). GGPLOT2. SpringerLink. https://link.springer.com/book/10.1007/978-3-319-24277-4 
+
+41. Zara, S., Gross, M. K., Zara, G., Budroni, M., & Bakalinsky, A. T. (2010). Ethanol-independent biofilm formation by a flor wine yeast strain of Saccharomyces cerevisiae. Applied and Environmental Microbiology, 76(12), 4089–4091. https://doi.org/10.1128/aem.00111-10 
+
+42. Lo, W. S., & Dranginis, A. M. (1996). Flo11, a yeast gene related to the STA genes, encodes a novel cell surface flocculin. Journal of Bacteriology, 178(24), 7144–7151. https://doi.org/10.1128/jb.178.24.7144-7151.1996 
+
+43. Nakagawa, Y., Arai, Y., Toda, Y., Yamamura, H., Okuda, T., Hayakawa, M., & Iimura, Y. (2016). Glucose repression of flo11 gene expression regulates pellicle formation by a wild pellicle-forming yeast strain isolated from contaminated wine. Biotechnology & amp; Biotechnological Equipment, 31(1), 120–127. https://doi.org/10.1080/13102818.2016.1246203 
+
+44. Stukey, J. E., McDonough, V. M., & Martin, C. E. (1990). The OLE1 gene of saccharomyces cerevisiae encodes the delta 9 fatty acid desaturase and can be functionally replaced by the rat stearoyl-COA desaturase gene. Journal of Biological Chemistry, 265(33), 20144–20149. https://doi.org/10.1016/s0021-9258(17)30481-7 
+
+45. Yang, Y., Xia, Y., Hu, W., Tao, L., Ni, L., Yu, J., & Ai, L. (2019). Membrane fluidity of  Saccharomyces cerevisiae  from huangjiu (Chinese rice wine) is variably regulated by ole1 to offset the disruptive effect of ethanol. Applied and Environmental Microbiology, 85(23). https://doi.org/10.1128/aem.01620-19 
